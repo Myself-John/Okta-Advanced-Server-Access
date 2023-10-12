@@ -1,0 +1,64 @@
+Firstly, you have to create the project in the team you mentioned before and you can assign the users to that project and assign the roles as per the requirement, Based on the roles, users are able to perform their activities
+-->In the ASA/app.scaleft.com
+
+************ Consider an AWS EC2 instance. ******************
+For this requirement, we need two instances of Windows AMI.
+1.	Client Machine
+2.	Server Machine
+In which Instance you decided to use as a Server or install Server agent make sure to enable the ALL TCP protocol and allow the 4421 port in Security Group and should be assign in to the while creation of EC2 Instance or later.
+
+**************************
+Install the Advanced Server Access Server Agent on Windows.
+To install the Advanced Server Access Server:
+https://dist.scaleft.com/repos/windows/stable/amd64/server-tools/
+After installing the Scaleft successfully,
+Create a server Enrollment token in Okta ASA.
+An enrollment token is a Base64 encoded object that includes metadata used to enroll the device into an Advanced Server Access project.
+	Open the project from the Advanced Server Access dashboard.
+	Switch to the Enrollment tab, and then click Create Enrollment Token.
+	Enter a description for the token. Click Submit to create the token.
+Copy the token from the ASA and create enrollment.token file in the below path and it should be support for all files.
+C:\Windows\System32\config\systemprofile\AppData\Local\ScaleFT
+You have to setup the environment variable, i.e., CanonicalName.
+CanonicalName: Examplehostname (Windows-ServerVM)
+Need to create sftd.yaml file in the below path and it should be support for all files.
+C:\Windows\System32\config\systemprofile\AppData\Local\ScaleFT
+	Need to reboot the EC2 instance to effect the changes.
+Verify server enrollment
+You can check if a server is enrolled in a project from the Advanced Server Access dashboard or by running a command on a client.
+To check if a server is enrolled in a project:
+4.	Open the Advanced Server Access dashboard.
+5.	Click Projects and select the project where the server was enrolled.
+6.	Go to the Servers tab.
+If the server was successfully enrolled in the project, it appears in the list.
+
+Alternatively, you can check the enrollment by running the sft list-servers command on the client. This command outputs a list of all enrolled servers. If the server was successfully enrolled, it appears in the list.
+************************
+Install the Advanced Server Access client on Windows.
+To install the Advanced Server Access client:
+https://dist.scaleft.com/repos/windows/stable/amd64/server-tools/
+Install Scaleft and run the app with all the users’ options in the advanced tab.
+Once the Installation successfully completed.
+Use the Advanced Server Access client
+	To get list of projects in ASA.
+sft list-projects
+	To get list of teams in the project in ASA.
+sft list-teams
+	To get the list of servers in the ASA team.
+sft list-servers
+	To connect the ASA Server.
+sft ssh-config servername
+You need to authenticate for the server by using Okta credentials.
+	To get the list of accounts in the client is configured.
+sft list-accounts
+	To unenroll the client
+sft unenroll
+**********************************************
+By directly accessing the servers in the OKta end-user dashboard, and for that, you need to follow the below steps in OKta.
+For this use case we can use Bookmark feature in okta  and we can see as an application:
+	From the Okta Admin Console, go to Applications > Applications.
+	Click Browse App Catalog.
+	Search for Bookmark App and select it from the list.
+	Click Add.
+	scaleft://app.scaleft.com/t/idm_team/a/Windows-ServerVM/rdp
+	Click Done.
