@@ -1,0 +1,104 @@
+Firstly, you have to create the project in the team you mentioned before ASA, and you can assign the users to that project and assign the roles as per the requirements. Based on their roles, users are able to perform their activities
+--> In the ASA/app.scaleft.com
+******** If you take an AWS EC2 instance, ********
+For this requirement, we need two instances of Ubuntu AMI
+1.	Server Machine
+2.	Client Machine
+Install the Advanced Server Access server agent in Ubuntu/Debian Server.
+To install the Advanced Server Access server agent:
+1.	Add the Advanced Server Access repository key.
+curl -fsSL https://dist.scaleft.com/GPG-KEY-OktaPAM-2023 | gpg --dearmor | sudo tee /usr/share/keyrings/oktapam-2023-archive-keyring.gpg > /dev/null
+2.	Create a package resource list entry. Replace DISTRIBUTION with the appropriate distribution name such as xenial, jammy, or bullseye. 
+echo "deb [signed-by=/usr/share/keyrings/oktapam-2023-archive-keyring.gpg] https://dist.scaleft.com/repos/deb jammy okta" | sudo tee /etc/apt/sources.list.d/oktapam-stable.list 
+3.	Update the list of available packages:
+sudo apt-get update
+4.	Search for the Advanced Server Access packages.
+sudo apt-cache search scaleft
+5.	Install the Okta server agent.
+sudo apt-get install scaleft-server-tools
+6.	The sftd daemon starts automatically.
+sudo journalctl -u sftd
+7.	Optional. Verify that the daemon is running.
+***************
+Create a server enrollment token in ASA
+An enrollment token is a Base64 encoded object that includes metadata used to enroll the device into an Advanced Server Access project.
+	Open the project from the Advanced Server Access dashboard.
+	Switch to the Enrollment tab, and then click Create Enrollment Token.
+	Enter a description for the token. Click Submit to create the token.
+8.	Copy the token to the enrollment token path on the server by writing it to a file.
+export Enrollment_Token=Paste here enrollment token from  the ASA
+sudo echo $Enrollment_Token | sudo tee /var/lib/sftd/enrollment.token
+9.	You have to setup the environment variable, i.e., CANONICAL_NAME.
+	CANONICAL_NAME: Example hostname (Linux_agentmachine)
+export CANONICAL_NAME=Linux_agentmachine
+sudo mkdir -p /etc/sft/
+sudo echo $CANONICAL_NAME | sudo tee /etc/sft/sftd.yaml
+10.	Restart the sftd service in Server.
+sudo service sftd restart
+Verify server enrollment
+You can check if a server is enrolled in a project from the Advanced Server Access dashboard or by running a command on a client.
+*************
+To check if a server is enrolled in a project:
+1.	Open the Advanced Server Access dashboard.
+2.	Click Projects and select the project where the server was enrolled.
+3.	Go to the Servers tab.
+If the server was successfully enrolled in the project, it appears in the list.
+
+Alternatively, you can check the enrollment by running the sft list-servers command on the client. This command outputs a list of all enrolled servers. If the server was successfully enrolled, it appears in the list.
+
+**************************************************
+Install the Advanced Server Access client on Ubuntu or Debian
+To install the Advanced Server Access client:
+1.	Add the Advanced Server Access repository key.
+curl -fsSL https://dist.scaleft.com/GPG-KEY-OktaPAM-2023 | gpg --dearmor | sudo tee /usr/share/keyrings/oktapam-2023-archive-keyring.gpg > /dev/null 
+2.	Create a package resource list entry. Replace DISTRIBUTION with the appropriate distribution name such as xenial, jammy, or bullseye.
+echo "deb [signed-by=/usr/share/keyrings/oktapam-2023-archive-keyring.gpg] https://dist.scaleft.com/repos/deb jammy okta" | sudo tee /etc/apt/sources.list.d/oktapam-stable.list 
+3.	Update the list of available packages:
+sudo apt-get update
+4.	Search for the Advanced Server Access packages.
+sudo apt-cache search scaleft
+5.	Install the client.
+sudo apt-get install scaleft-client-tools
+6.	Install the URL handler.
+sudo apt-get install scaleft-url-handler
+7.	To change the hostname for the Client machine.
+sudo vi /etc/hostname
+Example hostname (Linux_clientmachine)
+Save the edits and exit from the editor.
+8.	Need to reboot the EC2 instance to effect the changes.
+sudo systemctl reboot
+*******
+Enroll the Advanced Server Access client in ubuntu
+	From a Terminal on the client, run the command: 
+sft enroll
+Authenticate yourself for the Server  by using Okta credentials.
+	From the browser window, select the team to enroll the client.
+Note: When run in a headless environment, the command outputs a URL. Open the URL in a browser.
+	Click the team to enroll with, and then click Approve.
+**********
+Use the Advanced Server Access client
+	To get list of projects in ASA.
+sft list-projects
+	To get list of teams in the project in ASA.
+sft list-teams
+	To get the list of servers in the ASA team.
+sft list-servers
+	To connect the ASA Server.
+sft ssh-config servername
+You need to authenticate for the server by using Okta credentials.
+	To get the list of accounts in the client is configured.
+sft list-accounts
+	To unenroll the client
+sft unenroll
+	To uninstall the sft service.
+sudo apt-get remove scaleft-server-tools
+
+************************************************
+By directly accessing the servers from the OKta end-user dashboard, and for that, you need to follow the below step in OKta.
+For this use case we can use Bookmark feature in okta  and we can see as an application:
+	From the Okta Admin Console, go to Applications > Applications.
+	Click Browse App Catalog.
+	Search for Bookmark App and select it from the list.
+	Click Add.
+	scaleft://app.scaleft.com/t/team name/a/sverer agent name/ssh
+	Click Done.
